@@ -7,10 +7,11 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { compare } from 'bcryptjs';
+import { plainToClass } from 'class-transformer';
 import { RoleType } from '../role/roletype.enum';
 import { User } from '../user/user.entity';
 import { AuthRepository } from './auth.repository';
-import { SigninDto, SignupDto } from './dto';
+import { LoggedInDto, SigninDto, SignupDto } from './dto';
 import { IJwtPayload } from './jwt.payload.interface';
 
 @Injectable()
@@ -34,7 +35,7 @@ export class AuthService {
     return this._authRepository.signup(signUpDto);
   }
 
-  async signin(signInDto: SigninDto): Promise<{ token: string }> {
+  async signin(signInDto: SigninDto): Promise<LoggedInDto> {
     const { username, password } = signInDto;
     const user: User = await this._authRepository.findOne({
       where: [{ username }],
@@ -58,6 +59,6 @@ export class AuthService {
 
     const token = await this._jwtService.sign(payload);
 
-    return { token };
+    return plainToClass(LoggedInDto, { token, user });
   }
 }
